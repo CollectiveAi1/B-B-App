@@ -337,8 +337,8 @@ function App() {
         status: MessageStatus.NEW,
         author: 'guest'
       };
-      setMessages(prev => [newSearchMessage, ...prev.map(m => m.status !== MessageStatus.NEW ? { ...m, status: MessageStatus.NEW, id: `${m.id}_${Date.now()}`, author: 'guest' as 'guest' } : m )]);
-      addLog("Message check complete", "System refreshed with new messages.");
+      setMessages(prev => [newSearchMessage, ...prev]);
+      addLog("Message check complete", `Found 1 new message from ${newSearchMessage.guestName}.`);
       setIsChecking(false);
     }, 1500);
   }, [addLog]);
