@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { Message, Booking, LogEntry, SlackNotification, Alert, MessageStatus, CleaningStatus, CleaningTask, CleaningStaff, ClockEvent, Note, IncidentReport, ChecklistItemStatus, StatFilter, MaintenanceTask, TaskStatus, MaintenanceStaff } from './types';
-import { INITIAL_MESSAGES, UPCOMING_BOOKINGS, CLEANING_STAFF, MAINTENANCE_STAFF, PROPERTY_LOCATIONS } from './constants';
+import { Message, Booking, LogEntry, SlackNotification, Alert, MessageStatus, CleaningStatus, CleaningTask, CleaningStaff, ClockEvent, Note, IncidentReport, ChecklistItemStatus, StatFilter, MaintenanceTask, TaskStatus, MaintenanceStaff, GuestReview } from './types';
+import { INITIAL_MESSAGES, UPCOMING_BOOKINGS, CLEANING_STAFF, MAINTENANCE_STAFF, PROPERTY_LOCATIONS, INITIAL_REVIEWS } from './constants';
 import { PROPERTY_CHECKLISTS } from './data/checklists';
 import { generateAiResponse, generateScheduledMessage } from './services/geminiService';
 import { format, formatDistanceToNow, differenceInHours, isAfter, isBefore } from 'date-fns';
@@ -11,9 +11,10 @@ import LogPanel from './components/LogPanel';
 import CleaningPanel from './components/CleaningPanel';
 import MaintenancePanel from './components/MaintenancePanel';
 import DashboardStats from './components/DashboardStats';
-import { CalendarIcon, SlackIcon, AlertIcon, ArrowPathIcon, AirbnbIcon, BroomIcon, WrenchScrewdriverIcon } from './components/Icons';
+import ReviewsPanel from './components/ReviewsPanel';
+import { CalendarIcon, SlackIcon, AlertIcon, ArrowPathIcon, AirbnbIcon, BroomIcon, WrenchScrewdriverIcon, ChatBubbleOvalLeftEllipsisIcon } from './components/Icons';
 
-type Tab = 'messages' | 'cleaning';
+type Tab = 'messages' | 'cleaning' | 'reviews';
 
 function App() {
   // Core State
@@ -35,6 +36,9 @@ function App() {
 
   // Maintenance State
   const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTask[]>([]);
+  
+  // Reviews State
+  const [reviews, setReviews] = useState<GuestReview[]>(INITIAL_REVIEWS);
 
   const isCheckingRef = useRef(isChecking);
   isCheckingRef.current = isChecking;
@@ -425,6 +429,17 @@ function App() {
     setActiveFilter(null);
     setHighlightedMessageId(messageId);
   }, []);
+  
+  const handleAddReview = useCallback((reviewData: Omit<GuestReview, 'id' | 'timestamp'>) => {
+    const newReview: GuestReview = {
+      ...reviewData,
+      id: `review_${Date.now()}`,
+      timestamp: new Date(),
+    };
+    setReviews(prev => [newReview, ...prev].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime()));
+    addLog(`Added review for ${reviewData.guestName}`, 'New Review');
+  }, [addLog]);
+
 
   const { filteredCalendarItems, calendarTitle, calendarEmptyMessage } = useMemo(() => {
     const now = new Date();
@@ -492,6 +507,10 @@ function App() {
   const sortedMessages = useMemo(() => {
     return [...messages].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
   }, [messages]);
+  
+  const sortedReviews = useMemo(() => {
+    return [...reviews].sort((a,b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }, [reviews]);
 
   const taskSourceMessageIds = useMemo(() => {
     return new Set(maintenanceTasks.map(task => task.sourceMessageId));
@@ -580,6 +599,17 @@ function App() {
             <BroomIcon className="w-5 h-5 mr-2" />
             Cleaning Crew
           </button>
+          <button
+            onClick={() => setActiveTab('reviews')}
+            className={`whitespace-nowrap flex items-center py-4 px-1 border-b-2 font-medium text-sm focus:outline-none ${
+              activeTab === 'reviews'
+                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:border-slate-500'
+            }`}
+          >
+            <ChatBubbleOvalLeftEllipsisIcon className="w-5 h-5 mr-2" />
+            Guest Reviews
+          </button>
         </nav>
       </div>
 
@@ -606,6 +636,13 @@ function App() {
                     onAddNote={handleAddNote}
                     onAddIncident={handleAddIncident}
                     onUpdateChecklistItem={handleUpdateChecklistItem}
+                />
+            )}
+            {activeTab === 'reviews' && (
+                <ReviewsPanel
+                    reviews={sortedReviews}
+                    bookings={bookings}
+                    onAddReview={handleAddReview}
                 />
             )}
         </div>

@@ -1,4 +1,4 @@
-import { Message, Booking, MessageStatus, CleaningStaff, MaintenanceStaff } from './types';
+import { Message, Booking, MessageStatus, CleaningStaff, MaintenanceStaff, GuestReview } from './types';
 
 export const INITIAL_MESSAGES: Message[] = [
   {
@@ -91,4 +91,23 @@ export const MAINTENANCE_STAFF: MaintenanceStaff[] = [
     { id: 'maint_staff_4', name: 'Walter Pipes', specializations: ['leak', 'plumbing', 'sink', 'faucet', 'toilet', 'drip', 'water'], location: 'Downtown' },
     { id: 'maint_staff_2', name: 'Eleanor Spark', specializations: ['electric', 'outlet', 'light', 'power', 'wifi', 'internet', 'password'], location: 'Uptown' },
     { id: 'maint_staff_3', name: 'Bob Builder', specializations: ['general', 'broken', 'fix', 'repair', 'door', 'window'], location: 'Any' }
+];
+
+export const INITIAL_REVIEWS: GuestReview[] = [
+  {
+    id: 'review_1',
+    guestName: 'Bruce Wayne',
+    property: 'The Penthouse',
+    rating: 5,
+    comment: "Absolutely stunning view from The Penthouse. The place was immaculate and the host was very responsive. A truly 5-star experience.",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
+  },
+  {
+    id: 'review_2',
+    guestName: 'Charlie Brown',
+    property: 'The Cozy Cottage',
+    rating: 4,
+    comment: "The cottage was very cozy and clean. The location is great. We had a small issue with the Wi-Fi, but it was resolved quickly. Would stay again.",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5), // 5 days ago
+  },
 ];

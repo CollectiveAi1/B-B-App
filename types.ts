@@ -136,3 +136,12 @@ export interface MaintenanceTask {
     assignedToStaffId?: string;
     assignedToStaffName?: string;
 }
+
+export interface GuestReview {
+  id: string;
+  guestName: string;
+  property: string;
+  rating: number; // 1 to 5
+  comment: string;
+  timestamp: Date;
+}
