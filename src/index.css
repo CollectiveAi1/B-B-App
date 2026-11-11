@@ -1,0 +1,192 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens.
+ *
+ * Palette follows a 60:30:10 split on the Collective AI house colours:
+ *   60%  canvas   the page itself
+ *   30%  surface  panels, wells, and the lines that structure them
+ *   10%  accent   parent gold, reserved for the primary action and the
+ *                 current selection. It is never used as a status colour.
+ *
+ * Components use these names only. The default Tailwind palette is removed
+ * below so a stray `bg-indigo-600` fails to compile instead of drifting in.
+ * Contrast for every text pairing is asserted in src/theme.test.ts.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  --canvas: #f2f2f6;
+  --surface: #ffffff;
+  --well: #f5f5f9;
+  --hover: #eeeef4;
+  --line: #dddde7;
+  --line-strong: #8787a0;
+
+  --ink: #14142b;
+  --ink-muted: #55556e;
+
+  --accent: #d4a843;
+  --on-accent: #14142b;
+  /* Gold is too light to read as text or a thin line on white, so those use a deeper cut of it. */
+  --accent-ink: #7a5a0a;
+  --accent-edge: #7a5a0a;
+  --focus: #14142b;
+
+  --success-wash: #e4f3e9;
+  --success-ink: #17603a;
+  --info-wash: #e4edfa;
+  --info-ink: #1f4e8c;
+  --warning-wash: #fbebdd;
+  --warning-ink: #8a4a0c;
+  --danger-wash: #fbe6e6;
+  --danger-ink: #9a1f1f;
+  --neutral-wash: #ececf3;
+  --neutral-ink: #44445c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --canvas: #0a0a0f;
+    --surface: #1a1a2e;
+    --well: #131324;
+    --hover: #24243e;
+    --line: #2f2f4c;
+    --line-strong: #7878a2;
+
+    --ink: #f3f3f8;
+    --ink-muted: #a9a9c2;
+
+    --accent: #d4a843;
+    --on-accent: #0a0a0f;
+    --accent-ink: #d4a843;
+    --accent-edge: #d4a843;
+    --focus: #d4a843;
+
+    --success-wash: #133022;
+    --success-ink: #86d9a6;
+    --info-wash: #15284a;
+    --info-ink: #93bdf5;
+    --warning-wash: #3b260d;
+    --warning-ink: #f2b777;
+    --danger-wash: #401818;
+    --danger-ink: #f7a8a8;
+    --neutral-wash: #26263f;
+    --neutral-ink: #c9c9dc;
+  }
+}
+
+@theme {
+  --color-*: initial;
+  --font-display: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-well: var(--well);
+  --color-hover: var(--hover);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-edge: var(--accent-edge);
+  --color-focus: var(--focus);
+
+  --color-success-wash: var(--success-wash);
+  --color-success-ink: var(--success-ink);
+  --color-info-wash: var(--info-wash);
+  --color-info-ink: var(--info-ink);
+  --color-warning-wash: var(--warning-wash);
+  --color-warning-ink: var(--warning-ink);
+  --color-danger-wash: var(--danger-wash);
+  --color-danger-ink: var(--danger-ink);
+  --color-neutral-wash: var(--neutral-wash);
+  --color-neutral-ink: var(--neutral-ink);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--canvas);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  /* One focus treatment for every interactive element, visible in both themes. */
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  input[type='checkbox'],
+  input[type='radio'] {
+    accent-color: var(--accent-edge);
+  }
+
+  /* Native progress bars, restyled to the palette. They keep their built-in semantics. */
+  progress {
+    appearance: none;
+    display: block;
+    width: 100%;
+    height: 0.375rem;
+    overflow: hidden;
+    border: 0;
+    border-radius: 9999px;
+    background-color: var(--neutral-wash);
+    color: var(--ink-muted);
+  }
+
+  progress::-webkit-progress-bar {
+    background-color: var(--neutral-wash);
+  }
+
+  progress::-webkit-progress-value {
+    background-color: var(--ink-muted);
+  }
+
+  progress::-moz-progress-bar {
+    background-color: var(--ink-muted);
+  }
+
+  progress[data-complete='true'] {
+    color: var(--success-ink);
+  }
+
+  progress[data-complete='true']::-webkit-progress-value {
+    background-color: var(--success-ink);
+  }
+
+  progress[data-complete='true']::-moz-progress-bar {
+    background-color: var(--success-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
