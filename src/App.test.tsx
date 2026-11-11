@@ -282,6 +282,20 @@ describe('cleaning workspace', () => {
     expect(checkbox(/Wipe down kitchen island/)).toBeEnabled();
   });
 
+  it('rejects an SVG, which could carry script when opened full size', async () => {
+    await openPenthouseTurnover();
+    const button = screen.getByRole('button', { name: /Add photo.*glass surfaces/ });
+    await userEvent
+      .setup({ applyAccept: false })
+      .upload(
+        button.nextElementSibling as HTMLInputElement,
+        new File(['<svg onload="alert(1)"/>'], 'proof.svg', { type: 'image/svg+xml' }),
+      );
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Choose a JPEG, PNG, WebP, or HEIC photo.');
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
   it('rejects a file that is not an image', async () => {
     await openPenthouseTurnover();
     const button = screen.getByRole('button', { name: /Add photo.*glass surfaces/ });
@@ -293,7 +307,7 @@ describe('cleaning workspace', () => {
         new File(['x'], 'notes.pdf', { type: 'application/pdf' }),
       );
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Choose an image file.');
+    expect(screen.getByRole('alert')).toHaveTextContent('Choose a JPEG, PNG, WebP, or HEIC photo.');
     expect(screen.getByRole('checkbox', { name: /Clean all glass surfaces/ })).not.toBeChecked();
   });
 

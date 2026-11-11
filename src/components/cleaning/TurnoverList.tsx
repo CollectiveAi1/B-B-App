@@ -18,6 +18,11 @@ import { EmptyState } from '../ui/EmptyState';
 import { Panel } from '../ui/Panel';
 
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+/**
+ * Raster formats only. The thumbnail links to the full photo, and an SVG opened
+ * that way is a document that can run script, so it is not accepted.
+ */
+const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 
 export interface TurnoverHandlers {
   onStatusChange: (taskId: string, status: CleaningStatus) => void;
@@ -47,8 +52,8 @@ function ChecklistRow({ item, itemState, locked, onToggle, onAttachPhoto }: Chec
     event.target.value = '';
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      setPhotoError('Choose an image file.');
+    if (!PHOTO_TYPES.includes(file.type)) {
+      setPhotoError('Choose a JPEG, PNG, WebP, or HEIC photo.');
       return;
     }
     if (file.size > MAX_PHOTO_BYTES) {
@@ -108,7 +113,7 @@ function ChecklistRow({ item, itemState, locked, onToggle, onAttachPhoto }: Chec
             <input
               ref={fileInput}
               type="file"
-              accept="image/*"
+              accept={PHOTO_TYPES.join(',')}
               hidden
               tabIndex={-1}
               onChange={onFileChosen}

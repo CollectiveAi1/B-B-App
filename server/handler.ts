@@ -80,10 +80,12 @@ class HttpError extends Error {
  * Hosts this request may claim to come from: the host in its URL, plus the
  * public host a reverse proxy reports when it forwards to an internal address.
  *
- * Trusting X-Forwarded-Host is safe for this check. The threat is another
- * website posting through a visitor's browser, and a page cannot set that
- * header on a cross-site request without a CORS preflight, which this route
- * never approves.
+ * Trusting X-Forwarded-Host is acceptable for this check. The threat is
+ * another website posting through a visitor's browser. Such a request is
+ * already refused by the Sec-Fetch-Site test, and a page cannot add this header
+ * cross-site without a CORS preflight, which this route never approves. A
+ * script outside a browser can forge it, as it can forge Origin: that case is
+ * what the rate limits are for.
  */
 function ownHosts(request: Request): Set<string> {
   const forwarded = request.headers.get('x-forwarded-host')?.split(',')[0]?.trim();

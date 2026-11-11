@@ -54,6 +54,16 @@ const REQUEST_TIMEOUT_MS = 35_000;
 /** Long enough to see a message move through "Processing" when the demo responder answers instantly. */
 const DEMO_REPLY_DELAY_MS = 600;
 
+/** A source the UI may render as a link: titled, and plain http(s). */
+function isSource(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    typeof value.title === 'string' &&
+    typeof value.url === 'string' &&
+    /^https?:\/\//i.test(value.url)
+  );
+}
+
 function isReplyResponse(value: unknown): value is ReplyResponse {
   if (!isRecord(value) || typeof value.usedSearch !== 'boolean' || !isRecord(value.result)) {
     return false;
@@ -61,7 +71,11 @@ function isReplyResponse(value: unknown): value is ReplyResponse {
   const { result } = value;
   switch (result.kind) {
     case 'reply':
-      return typeof result.text === 'string' && Array.isArray(result.sources);
+      return (
+        typeof result.text === 'string' &&
+        Array.isArray(result.sources) &&
+        result.sources.every(isSource)
+      );
     case 'maintenance':
       return typeof result.task === 'string';
     case 'escalation':

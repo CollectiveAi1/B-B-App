@@ -5,8 +5,25 @@ import { ASSISTANT_ENDPOINT } from '../shared/assistant.js';
 import { createAssistantHandler, type AssistantHandler } from './handler.js';
 import { SECURITY_HEADERS } from './securityHeaders.js';
 
-function toWebRequest(incoming: IncomingMessage): Request {
-  const url = new URL(incoming.url ?? '/', `http://${incoming.headers.host ?? 'localhost'}`);
+/**
+ * The request's URL, with the host taken from the Host header only.
+ *
+ * A request target such as `//other.example/api/assistant` would otherwise be
+ * read as a URL on another host, and the same-origin check compares against
+ * this host. Appending the target to the origin keeps it a path. A target that
+ * does not form a valid URL returns null.
+ */
+function requestUrl(incoming: IncomingMessage): URL | null {
+  const target = incoming.url ?? '/';
+  if (!target.startsWith('/')) return null;
+  try {
+    return new URL(`http://${incoming.headers.host ?? 'localhost'}${target}`);
+  } catch {
+    return null;
+  }
+}
+
+function toWebRequest(incoming: IncomingMessage, url: URL): Request {
   const headers = new Headers();
   for (const [name, value] of Object.entries(incoming.headers)) {
     if (value !== undefined) headers.set(name, Array.isArray(value) ? value.join(', ') : value);
@@ -34,12 +51,13 @@ async function sendWebResponse(
 
 async function respond(
   handler: AssistantHandler,
+  url: URL,
   incoming: IncomingMessage,
   outgoing: ServerResponse,
   next: Connect.NextFunction,
 ): Promise<void> {
   try {
-    const response = await handler(toWebRequest(incoming), {
+    const response = await handler(toWebRequest(incoming, url), {
       clientId: incoming.socket.remoteAddress ?? 'local',
     });
     await sendWebResponse(response, outgoing, incoming.method);
@@ -57,12 +75,12 @@ export function assistantApi(): Plugin {
   let handle: AssistantHandler | null = null;
 
   const middleware: Connect.NextHandleFunction = (incoming, outgoing, next) => {
-    const pathname = new URL(incoming.url ?? '/', 'http://localhost').pathname;
-    if (!handle || pathname !== ASSISTANT_ENDPOINT) {
+    const url = requestUrl(incoming);
+    if (!handle || url?.pathname !== ASSISTANT_ENDPOINT) {
       next();
       return;
     }
-    void respond(handle, incoming, outgoing, next);
+    void respond(handle, url, incoming, outgoing, next);
   };
 
   return {

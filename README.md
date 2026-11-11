@@ -36,6 +36,8 @@ npm run dev
 
 Open http://localhost:3000. The four waiting messages are answered within a few seconds.
 
+The dev server listens on localhost only. To open it from a phone on the same network, run `npm run dev -- --host`.
+
 ## Connecting Gemini
 
 ```sh

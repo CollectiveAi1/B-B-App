@@ -121,6 +121,13 @@ describe('live mode', () => {
       json({ result: { kind: 'poem' }, usedSearch: false }),
     ],
     ['a non-JSON response', new Response('<html>', { status: 200 })],
+    [
+      'a source link that is not http(s)',
+      json({
+        result: { kind: 'reply', text: 'x', sources: [{ title: 't', url: 'javascript:alert(1)' }] },
+        usedSearch: true,
+      }),
+    ],
   ])('rejects %s', async (_label, response) => {
     await expect(client(fakeFetch(live, response)).reply(question)).rejects.toMatchObject({
       failure: 'bad_response',
